@@ -1,0 +1,103 @@
+{% extends 'bean_app/base.html' %}
+{% block content %}
+<style>
+  body {
+    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') no-repeat center center fixed;
+    background-size: cover;
+  }
+  .signup-overlay {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 247, 250, 0.82);
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+  }
+  .signup-card {
+    background: rgba(255,255,255,0.92);
+    border: 1.5px solid #d1cfcf;
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 32px #0002;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
+    max-width: 420px;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+  }
+  .signup-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #222;
+    font-family: 'Georgia', serif;
+  }
+  .signup-form .form-control {
+    font-size: 1.1rem;
+    padding: 0.8rem 1.1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.2rem;
+    background: #f9f7f2;
+    border: 1.5px solid #bdbdbd;
+    font-family: 'Georgia', serif;
+  }
+  .signup-form .form-control:focus {
+    border-color: #388e3c;
+    box-shadow: 0 0 0 2px #388e3c22;
+  }
+  .signup-btn {
+    width: 100%;
+    background: #222c36;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.7rem 0;
+    margin-top: 0.5rem;
+    margin-bottom: 1.1rem;
+    border: none;
+    transition: background 0.2s;
+  }
+  .signup-btn:hover {
+    background: #388e3c;
+    color: #fff;
+  }
+  .signup-link {
+    text-align: center;
+    font-size: 1.08rem;
+    color: #222;
+    margin-bottom: 0.5rem;
+  }
+  .signup-link a {
+    color: #388e3c;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  .signup-success {
+    text-align: center;
+    color: #e53935;
+    font-size: 1.08rem;
+    margin-top: 0.7rem;
+  }
+</style>
+<div class="signup-overlay">
+  <div class="signup-card">
+    <div class="signup-title">Create a new account</div>
+    <form method="post" class="signup-form">
+      {% csrf_token %}
+      {% for field in form %}
+        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" {% if field.field.required %}required{% endif %}>
+      {% endfor %}
+      <button type="submit" class="signup-btn">Submit</button>
+    </form>
+    <div class="signup-link">
+      Already a member? <a href="{% url 'login' %}">Log In</a>
+    </div>
+    {% if form.non_field_errors %}
+      <div class="signup-success">{{ form.non_field_errors }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} 

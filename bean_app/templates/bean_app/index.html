@@ -1,0 +1,202 @@
+{% extends 'bean_app/base.html' %}
+{% block content %}
+<style>
+  .model-toggle-group {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .model-toggle {
+    border: 2px solid var(--border);
+    border-radius: 2rem;
+    padding: 1.2rem 2.2rem;
+    background: var(--container-bg);
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: none;
+    outline: none;
+    min-width: 160px;
+    justify-content: center;
+  }
+  .model-toggle.selected, .model-toggle:focus, .model-toggle.active {
+    background: var(--accent);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+    box-shadow: 0 0 0 2px var(--primary)33;
+  }
+  .upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 1.2rem;
+    background: var(--bg);
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .upload-area.dragover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .btn-predict {
+    width: 100%;
+    border-radius: 1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 0.8rem 0;
+    margin-bottom: 1.2rem;
+  }
+  .result-card {
+    background: #e8fbe8;
+    border-radius: 1.2rem;
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    margin-top: 1.2rem;
+    box-shadow: 0 2px 12px #0001;
+    border-left: 6px solid var(--primary);
+  }
+  body.dark-mode .result-card {
+    background: #223c22;
+    color: #e8fbe8;
+    border-left: 6px solid var(--primary);
+  }
+  .result-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+  }
+  .confidence-bar {
+    height: 18px;
+    border-radius: 1rem;
+    background: #c8e6c9;
+    overflow: hidden;
+    margin-bottom: 0.7rem;
+  }
+  .confidence-bar-inner {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 1rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    line-height: 18px;
+    transition: width 0.5s;
+  }
+  .confidence-badge {
+    background: var(--primary);
+    color: #fff;
+    border-radius: 0.7rem;
+    padding: 0.3rem 1.1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+  .btn-soft {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 0.7rem;
+    padding: 0.5rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 0.7rem;
+    transition: background 0.2s;
+  }
+  .btn-soft:hover {
+    background: #d5d5d5;
+  }
+</style>
+<div class="text-center mb-4">
+  <h1 class="fw-bold" style="font-size:2.3rem;">Bean Leaf Disease Classifier</h1>
+</div>
+<form id="predict-form" method="POST" enctype="multipart/form-data" autocomplete="off" aria-label="Bean leaf disease prediction form">
+  {% csrf_token %}
+  <div class="model-toggle-group mb-4">
+    {% for value, label in form.model_choice.field.choices %}
+      <label class="model-toggle {% if form.model_choice.value == value %}selected{% endif %}" tabindex="0">
+        {% if value == 'mobilenet' %}<i class="fa fa-mobile-alt"></i>{% endif %}
+        {% if value == 'resnet' %}<i class="fa fa-layer-group"></i>{% endif %}
+        {% if value == 'vit' %}<i class="fa fa-eye"></i>{% endif %}
+        <input type="radio" name="model_choice" value="{{ value }}" autocomplete="off" style="display:none;" {% if form.model_choice.value == value %}checked{% endif %}>
+        {{ label }}
+      </label>
+    {% endfor %}
+  </div>
+  <div class="upload-area mb-4" id="drop-area">
+    <span id="drop-text">Drag & Drop or Click to Upload Image</span>
+    <input type="file" id="image-input" name="image" accept="image/*" style="display:none;">
+    <img id="image-preview" src="#" alt="Image Preview" class="img-fluid rounded mt-2" style="max-height: 120px; display: none; border: 2px solid var(--primary);">
+    <div class="file-info text-secondary small mt-2" id="file-info"></div>
+  </div>
+  <button type="submit" class="btn btn-success btn-predict">Predict</button>
+</form>
+{% if prediction %}
+  <div class="result-card">
+    <div class="result-title">Prediction: <span class="fw-bold">{{ prediction|cut:'('|cut:')' }}</span></div>
+    {% if prediction and '(' in prediction %}
+      {% with conf=prediction|slice:'-7:-2' %}
+      <div class="confidence-bar mb-2">
+        <div class="confidence-bar-inner" style="width:{{ conf }}%;">&nbsp;</div>
+      </div>
+      <div class="confidence-badge">Confidence: {{ conf }}%</div>
+      {% endwith %}
+    {% endif %}
+    <div class="text-secondary mt-2 mb-1">Model: {{ selected_model }}</div>
+    <button onclick="window.location.reload();" class="btn btn-soft">Try another image</button>
+  </div>
+{% endif %}
+{% if error_message %}
+  <div class="alert alert-danger mt-3" role="alert">{{ error_message }}</div>
+{% endif %}
+<script>
+// Model toggle selection
+const toggles = document.querySelectorAll('.model-toggle');
+toggles.forEach(toggle => {
+  toggle.addEventListener('click', function() {
+    toggles.forEach(t => t.classList.remove('selected'));
+    this.classList.add('selected');
+    this.querySelector('input[type=radio]').checked = true;
+  });
+});
+// Image preview logic
+const imageInput = document.getElementById('image-input');
+const imagePreview = document.getElementById('image-preview');
+const dropText = document.getElementById('drop-text');
+const fileInfo = document.getElementById('file-info');
+imageInput.onchange = evt => {
+  const [file] = imageInput.files;
+  if (file) {
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = 'block';
+    dropText.style.display = 'none';
+    fileInfo.textContent = file.name + ' (' + Math.round(file.size/1024) + ' KB)';
+  }
+};
+// Drag & drop
+const dropArea = document.getElementById('drop-area');
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', e => { e.preventDefault(); dropArea.classList.remove('dragover'); });
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  dropArea.classList.remove('dragover');
+  imageInput.files = e.dataTransfer.files;
+  imageInput.onchange();
+});
+// Click to upload
+if (dropArea) {
+  dropArea.addEventListener('click', () => imageInput.click());
+}
+</script>
+{% endblock %}

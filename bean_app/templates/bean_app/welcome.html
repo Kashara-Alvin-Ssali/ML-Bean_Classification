@@ -1,0 +1,132 @@
+{% extends "bean_app/base.html" %}
+{% block content %}
+<style>
+  .welcome-hero {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    min-height: 340px;
+    background: #f5f7fa;
+  }
+  .welcome-left {
+    flex: 1 1 340px;
+    background: #f5f7fa;
+    padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .welcome-guide {
+    color: #888;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.7rem;
+    text-transform: uppercase;
+  }
+  .welcome-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3a4b;
+    margin-bottom: 1.1rem;
+    line-height: 1.2;
+  }
+  .welcome-desc {
+    font-size: 1.13rem;
+    color: #3a4a5b;
+    margin-bottom: 1.5rem;
+  }
+  .welcome-cta {
+    display: flex;
+    gap: 1.1rem;
+    margin-top: 0.5rem;
+  }
+  .welcome-cta .btn-success {
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 0.7rem;
+    padding: 0.6rem 2.1rem;
+  }
+  .welcome-cta .btn-primary {
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 0.7rem;
+    padding: 0.6rem 2.1rem;
+    background: #fff;
+    color: #388e3c;
+    border: 2px solid #388e3c;
+  }
+  .welcome-cta .btn-primary:hover {
+    background: #e3fcec;
+    color: #388e3c;
+  }
+  .welcome-right {
+    flex: 0 0 320px;
+    background: #ff8800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 340px;
+  }
+  .speech-bubble {
+    background: #fff;
+    border-radius: 1.2rem;
+    padding: 1.2rem 2.2rem;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #ff8800;
+    box-shadow: 0 2px 12px #0001;
+    position: relative;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+  }
+  .speech-bubble:after {
+    content: '';
+    position: absolute;
+    left: 30px;
+    bottom: -22px;
+    width: 0;
+    height: 0;
+    border: 18px solid transparent;
+    border-top: 18px solid #fff;
+    border-bottom: 0;
+  }
+  .welcome-icon {
+    font-size: 2.7rem;
+    color: #fff;
+    margin-top: 1.2rem;
+    margin-left: 0.5rem;
+    filter: drop-shadow(0 2px 8px #0002);
+  }
+  @media (max-width: 900px) {
+    .welcome-hero { flex-direction: column; }
+    .welcome-right { min-height: 180px; justify-content: flex-start; }
+  }
+</style>
+<div class="welcome-hero">
+  <div class="welcome-left">
+    <div class="welcome-guide">Ultimate Guide</div>
+    <div class="welcome-title">Welcome to Bean Leaf Disease Classifier</div>
+    <div class="welcome-desc">
+      Beans are a vital crop, but diseases like <b>Angular Leaf Spot</b>, <b>Bean Rust</b>, and others threaten yields worldwide.<br>
+      Early and accurate detection is crucial for farmers and food security.<br><br>
+      <b>Our Solution:</b> We use advanced AI models—<b>MobileNet</b>, <b>ResNet</b>, and <b>Vision Transformer</b>—to analyze leaf images and identify diseases quickly and accurately. These models have been trained on thousands of images to recognize subtle patterns and symptoms, helping farmers take action sooner.
+    </div>
+    <div class="welcome-cta">
+      <a href="{% url 'signup' %}" class="btn btn-success">Sign Up</a>
+      <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+    </div>
+  </div>
+  <div class="welcome-right">
+    <div>
+      <div class="speech-bubble">WELCOME</div>
+      <div class="welcome-icon">
+        <i class="fa fa-leaf"></i>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 
