@@ -12,3 +12,8 @@ bean_app/models/vit_model.pt
 .venv/
 __pycache__/
 .ipynb_checkpoints/
+*.pt
+*.pth
+*.venv/
+__pycache__/
+.ipynb_checkpoints/

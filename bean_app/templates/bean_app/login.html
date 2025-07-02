@@ -38,7 +38,7 @@
     font-size: 1.1rem;
     padding: 0.8rem 1.1rem;
     border-radius: 0.5rem;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.3rem;
     background: #f9f7f2;
     border: 1.5px solid #bdbdbd;
     font-family: 'Georgia', serif;
@@ -76,28 +76,57 @@
     font-weight: 500;
   }
   .login-error {
-    text-align: center;
     color: #e53935;
-    font-size: 1.08rem;
-    margin-top: 0.7rem;
+    font-size: 1.01rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    display: block;
   }
 </style>
 <div class="login-overlay">
   <div class="login-card">
     <div class="login-title">Log in to your Bean Classifier account</div>
-    <form method="post" class="login-form">
+    <form method="post" class="login-form" autocomplete="off">
       {% csrf_token %}
       {% for field in form %}
-        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" {% if field.field.required %}required{% endif %}>
+        {% if field.name == 'password' %}
+          <div style="position:relative;">
+            <input type="password" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" id="id_{{ field.name }}" {% if field.field.required %}required{% endif %}>
+            <input type="checkbox" id="togglePassword"> <label for="togglePassword" style="font-size:0.98rem;">Show Password</label>
+          </div>
+        {% elif field.name == 'remember_me' %}
+          <div style="margin-bottom:1rem;">
+            <input type="checkbox" name="remember_me" id="id_remember_me" {% if field.value %}checked{% endif %}>
+            <label for="id_remember_me" style="font-size:1.05rem;">Remember me</label>
+          </div>
+        {% else %}
+          <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" id="id_{{ field.name }}" {% if field.field.required %}required{% endif %}>
+        {% endif %}
+        {% if field.errors %}
+          <span class="login-error">{{ field.errors|striptags }}</span>
+        {% endif %}
       {% endfor %}
+      {% if form.non_field_errors %}
+        <span class="login-error">{{ form.non_field_errors|striptags }}</span>
+      {% endif %}
       <button type="submit" class="login-btn">Login</button>
     </form>
     <div class="login-link">
       Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
     </div>
-    {% if form.non_field_errors %}
-      <div class="login-error">{{ form.non_field_errors }}</div>
-    {% endif %}
+    <div class="login-link">
+      <a href="{% url 'password_reset' %}">Forgot password?</a>
+    </div>
   </div>
 </div>
+<script>
+// Show/hide password toggle
+const passwordInput = document.getElementById('id_password');
+const togglePassword = document.getElementById('togglePassword');
+if (togglePassword && passwordInput) {
+  togglePassword.addEventListener('change', function() {
+    passwordInput.type = this.checked ? 'text' : 'password';
+  });
+}
+</script>
 {% endblock %} 

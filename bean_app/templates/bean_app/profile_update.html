@@ -1,0 +1,148 @@
+{% extends 'bean_app/base.html' %}
+{% block content %}
+<style>
+  .profile-bg {
+    background: #eaf3fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+  .profile-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px #0001;
+    max-width: 420px;
+    width: 100%;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #b3d0e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 1.2rem;
+  }
+  .profile-title {
+    font-size: 2.1rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #222;
+    font-family: 'Georgia', serif;
+  }
+  .profile-form .input-group {
+    display: flex;
+    align-items: center;
+    background: #eaf3fa;
+    border-radius: 1.2rem;
+    margin-bottom: 1.1rem;
+    padding: 0.2rem 1rem;
+    width: 100%;
+  }
+  .profile-form .input-group i {
+    color: #7bb1e0;
+    font-size: 1.2rem;
+    margin-right: 0.7rem;
+  }
+  .profile-form input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 1.08rem;
+    padding: 0.8rem 0;
+    width: 100%;
+    color: #222;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  .profile-btn {
+    width: 100%;
+    background: #388e3c;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 2rem;
+    padding: 0.7rem 0;
+    border: none;
+    margin-top: 0.5rem;
+    margin-bottom: 1.1rem;
+    transition: background 0.2s;
+  }
+  .profile-btn:hover {
+    background: #2d7030;
+  }
+  .profile-success {
+    color: #388e3c;
+    font-size: 1.08rem;
+    text-align: center;
+    margin-bottom: 0.7rem;
+  }
+  .profile-error {
+    color: #e53935;
+    font-size: 1.01rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    display: block;
+  }
+  .change-password-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 1.2rem;
+    color: #00bcd4;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1.08rem;
+    transition: color 0.2s;
+  }
+  .change-password-link:hover {
+    color: #0097a7;
+    text-decoration: underline;
+  }
+</style>
+<div class="profile-bg">
+  <div class="profile-card">
+    <div class="profile-avatar">
+      <i class="fa fa-user"></i>
+    </div>
+    <div class="profile-title">Update Profile</div>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="profile-success">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post" class="profile-form" autocomplete="off" style="width:100%;">
+      {% csrf_token %}
+      <div class="input-group">
+        <i class="fa fa-user"></i>
+        {{ form.username }}
+      </div>
+      {% if form.username.errors %}
+        <span class="profile-error">{{ form.username.errors|striptags }}</span>
+      {% endif %}
+      <div class="input-group">
+        <i class="fa fa-envelope"></i>
+        {{ form.email }}
+      </div>
+      {% if form.email.errors %}
+        <span class="profile-error">{{ form.email.errors|striptags }}</span>
+      {% endif %}
+      {% if form.non_field_errors %}
+        <span class="profile-error">{{ form.non_field_errors|striptags }}</span>
+      {% endif %}
+      <button type="submit" class="profile-btn">Save Changes</button>
+    </form>
+    <a href="{% url 'password_change' %}" class="change-password-link"><i class="fa fa-lock"></i> Change Password</a>
+  </div>
+</div>
+{% endblock %} 

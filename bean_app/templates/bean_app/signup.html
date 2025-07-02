@@ -38,7 +38,7 @@
     font-size: 1.1rem;
     padding: 0.8rem 1.1rem;
     border-radius: 0.5rem;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.3rem;
     background: #f9f7f2;
     border: 1.5px solid #bdbdbd;
     font-family: 'Georgia', serif;
@@ -75,29 +75,80 @@
     text-decoration: underline;
     font-weight: 500;
   }
-  .signup-success {
-    text-align: center;
+  .signup-error {
     color: #e53935;
-    font-size: 1.08rem;
-    margin-top: 0.7rem;
+    font-size: 1.01rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    display: block;
   }
+  .password-strength {
+    font-size: 0.98rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    font-weight: 500;
+  }
+  .strength-weak { color: #e53935; }
+  .strength-medium { color: #fbc02d; }
+  .strength-strong { color: #388e3c; }
 </style>
 <div class="signup-overlay">
   <div class="signup-card">
     <div class="signup-title">Create a new account</div>
-    <form method="post" class="signup-form">
+    <form method="post" class="signup-form" autocomplete="off">
       {% csrf_token %}
       {% for field in form %}
-        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" {% if field.field.required %}required{% endif %}>
+        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" id="id_{{ field.name }}" {% if field.field.required %}required{% endif %}>
+        {% if field.errors %}
+          <span class="signup-error">{{ field.errors|striptags }}</span>
+        {% endif %}
+        {% if field.name == 'password' %}
+          <span id="password-strength" class="password-strength"></span>
+          <div style="margin-bottom:0.7rem;">
+            <input type="checkbox" id="togglePassword"> <label for="togglePassword" style="font-size:0.98rem;">Show Password</label>
+          </div>
+        {% endif %}
       {% endfor %}
+      {% if form.non_field_errors %}
+        <span class="signup-error">{{ form.non_field_errors|striptags }}</span>
+      {% endif %}
       <button type="submit" class="signup-btn">Submit</button>
     </form>
     <div class="signup-link">
       Already a member? <a href="{% url 'login' %}">Log In</a>
     </div>
-    {% if form.non_field_errors %}
-      <div class="signup-success">{{ form.non_field_errors }}</div>
-    {% endif %}
   </div>
 </div>
+<script>
+// Password strength indicator
+const passwordInput = document.getElementById('id_password');
+const strengthText = document.getElementById('password-strength');
+if (passwordInput && strengthText) {
+  passwordInput.addEventListener('input', function() {
+    const val = passwordInput.value;
+    let strength = 0;
+    if (val.length >= 8) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+    if (strength <= 1) {
+      strengthText.textContent = 'Weak password';
+      strengthText.className = 'password-strength strength-weak';
+    } else if (strength === 2 || strength === 3) {
+      strengthText.textContent = 'Medium strength password';
+      strengthText.className = 'password-strength strength-medium';
+    } else {
+      strengthText.textContent = 'Strong password';
+      strengthText.className = 'password-strength strength-strong';
+    }
+  });
+}
+// Show/hide password toggle
+const togglePassword = document.getElementById('togglePassword');
+if (togglePassword && passwordInput) {
+  togglePassword.addEventListener('change', function() {
+    passwordInput.type = this.checked ? 'text' : 'password';
+  });
+}
+</script>
 {% endblock %} 
