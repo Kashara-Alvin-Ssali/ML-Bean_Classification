@@ -8,3 +8,7 @@ __pycache__/
 
 bean_app/models/vit_model.pt
 *.pt
+.venv/
+.venv/
+__pycache__/
+.ipynb_checkpoints/
