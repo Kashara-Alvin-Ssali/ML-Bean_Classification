@@ -135,26 +135,38 @@
     {% endfor %}
   </div>
   <div class="upload-area mb-4" id="drop-area">
-    <span id="drop-text">Drag & Drop or Click to Upload Image</span>
-    <input type="file" id="image-input" name="image" accept="image/*" style="display:none;">
-    <img id="image-preview" src="#" alt="Image Preview" class="img-fluid rounded mt-2" style="max-height: 120px; display: none; border: 2px solid var(--primary);">
+    <span id="drop-text">Drag & Drop or Click to Upload Images</span>
+    <input type="file" id="image-input" name="images" accept="image/*" multiple style="display:none;">
     <div class="file-info text-secondary small mt-2" id="file-info"></div>
   </div>
   <button type="submit" class="btn btn-success btn-predict">Predict</button>
 </form>
-{% if prediction %}
+{% if results %}
   <div class="result-card">
-    <div class="result-title">Prediction: <span class="fw-bold">{{ prediction|cut:'('|cut:')' }}</span></div>
-    {% if prediction and '(' in prediction %}
-      {% with conf=prediction|slice:'-7:-2' %}
-      <div class="confidence-bar mb-2">
-        <div class="confidence-bar-inner" style="width:{{ conf }}%;">&nbsp;</div>
-      </div>
-      <div class="confidence-badge">Confidence: {{ conf }}%</div>
-      {% endwith %}
-    {% endif %}
-    <div class="text-secondary mt-2 mb-1">Model: {{ selected_model }}</div>
-    <button onclick="window.location.reload();" class="btn btn-soft">Try another image</button>
+    <div class="result-title">Batch Prediction Results</div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mt-3">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Result</th>
+            <th>Model</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td><img src="{{ r.image }}" alt="Prediction Image" style="width:60px; height:60px; object-fit:cover; border-radius:0.7em;"></td>
+            <td><span class="fw-bold">{{ r.result }}</span></td>
+            <td>{{ r.model }}</td>
+            <td>{{ r.date|date:'Y-m-d H:i' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button onclick="window.location.reload();" class="btn btn-soft">Try another batch</button>
   </div>
 {% endif %}
 {% if error_message %}
@@ -170,18 +182,22 @@ toggles.forEach(toggle => {
     this.querySelector('input[type=radio]').checked = true;
   });
 });
-// Image preview logic
+// Batch file info logic
 const imageInput = document.getElementById('image-input');
-const imagePreview = document.getElementById('image-preview');
 const dropText = document.getElementById('drop-text');
 const fileInfo = document.getElementById('file-info');
 imageInput.onchange = evt => {
-  const [file] = imageInput.files;
-  if (file) {
-    imagePreview.src = URL.createObjectURL(file);
-    imagePreview.style.display = 'block';
+  const files = imageInput.files;
+  if (files && files.length > 0) {
     dropText.style.display = 'none';
-    fileInfo.textContent = file.name + ' (' + Math.round(file.size/1024) + ' KB)';
+    let names = [];
+    for (let i = 0; i < files.length; i++) {
+      names.push(files[i].name + ' (' + Math.round(files[i].size/1024) + ' KB)');
+    }
+    fileInfo.textContent = files.length + ' file(s): ' + names.join(', ');
+  } else {
+    dropText.style.display = 'block';
+    fileInfo.textContent = '';
   }
 };
 // Drag & drop

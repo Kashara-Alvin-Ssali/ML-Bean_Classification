@@ -11,7 +11,6 @@ MODEL_CHOICES = [
 ]
 
 class PredictionForm(forms.Form):
-    image = forms.ImageField()
     model_choice = forms.ChoiceField(choices=MODEL_CHOICES)
 
 class UserRegistrationForm(forms.ModelForm):
@@ -47,6 +46,7 @@ class UserLoginForm(AuthenticationForm):
 class ProfileUpdateForm(forms.ModelForm):
     email = forms.EmailField(label='Email Address', required=True)
     username = forms.CharField(label='Username', max_length=150)
+    avatar = forms.ImageField(label='Profile Picture', required=False, widget=forms.FileInput)
 
     class Meta:
         model = User
@@ -55,6 +55,9 @@ class ProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        # If instance is a User, set initial avatar from profile
+        if self.instance and hasattr(self.instance, 'profile'):
+            self.fields['avatar'].initial = self.instance.profile.avatar
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

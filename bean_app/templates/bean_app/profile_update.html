@@ -109,11 +109,14 @@
     color: #0097a7;
     text-decoration: underline;
   }
+  input[type='file']#id_avatar { display:none; }
+  .form-check, .form-check-label, .form-check-input { display:none !important; }
+  .file-upload, .file-upload label, .file-upload .clearable-file-input, .file-upload .current, .file-upload .clear { display:none !important; }
 </style>
 <div class="profile-bg">
   <div class="profile-card">
     <div class="profile-avatar">
-      <i class="fa fa-user"></i>
+      <img src="{{ profile.get_avatar_url }}" alt="Profile Picture" style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
     </div>
     <div class="profile-title">Update Profile</div>
     {% if messages %}
@@ -121,7 +124,7 @@
         <div class="profile-success">{{ message }}</div>
       {% endfor %}
     {% endif %}
-    <form method="post" class="profile-form" autocomplete="off" style="width:100%;">
+    <form method="post" enctype="multipart/form-data" class="profile-form" autocomplete="off" style="width:100%;">
       {% csrf_token %}
       <div class="input-group">
         <i class="fa fa-user"></i>
@@ -137,6 +140,24 @@
       {% if form.email.errors %}
         <span class="profile-error">{{ form.email.errors|striptags }}</span>
       {% endif %}
+      <div class="input-group" style="flex-direction:column; align-items:flex-start; background:transparent;">
+        <label style="font-weight:600; color:#388e3c; margin-bottom:0.5em;">Profile Picture</label>
+        <div style="display:flex; align-items:center; gap:1em; margin-bottom:0.7em;">
+          <img id="avatar-preview" src="{{ profile.get_avatar_url }}" onerror="this.onerror=null;this.src='/static/img/default_avatar.png';" alt="Profile Picture" style="width:70px; height:70px; border-radius:50%; object-fit:cover; box-shadow:0 2px 8px #0001;">
+          {% if form.avatar.value %}
+            <button type="button" id="remove-avatar-btn" class="btn btn-sm btn-outline-danger" style="margin-left:0.5em;">Remove</button>
+          {% endif %}
+        </div>
+        <input type="hidden" name="avatar_remove" id="avatar-remove-field" value="">
+        <label for="id_avatar" class="custom-file-upload" style="background:#eaf3fa; color:#388e3c; border-radius:1.2em; padding:0.5em 1.2em; cursor:pointer; font-weight:500; border:1.5px solid #bdbdbd; display:inline-block;">
+          <i class="fa fa-upload"></i> Change Profile Picture
+        </label>
+        {{ form.avatar.as_widget }}
+        {% if form.avatar.errors %}
+          <span class="profile-error">{{ form.avatar.errors|striptags }}</span>
+        {% endif %}
+        <span style="font-size:0.98em; color:#888; margin-top:0.3em;">(JPG, PNG, max 2MB)</span>
+      </div>
       {% if form.non_field_errors %}
         <span class="profile-error">{{ form.non_field_errors|striptags }}</span>
       {% endif %}
@@ -145,4 +166,31 @@
     <a href="{% url 'password_change' %}" class="change-password-link"><i class="fa fa-lock"></i> Change Password</a>
   </div>
 </div>
+<script>
+  // Show preview of selected avatar
+  document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('id_avatar');
+    var preview = document.getElementById('avatar-preview');
+    if(input && preview) {
+      input.addEventListener('change', function(e) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            preview.src = e.target.result;
+          }
+          reader.readAsDataURL(input.files[0]);
+        }
+      });
+    }
+    // Custom Remove button logic
+    var removeBtn = document.getElementById('remove-avatar-btn');
+    var avatarRemoveField = document.getElementById('avatar-remove-field');
+    if(removeBtn && avatarRemoveField) {
+      removeBtn.addEventListener('click', function() {
+        avatarRemoveField.value = 'true';
+        removeBtn.closest('form').submit();
+      });
+    }
+  });
+</script>
 {% endblock %} 

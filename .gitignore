@@ -17,3 +17,7 @@ __pycache__/
 *.venv/
 __pycache__/
 .ipynb_checkpoints/
+*.pt
+*.pth
+.ipynb_checkpoints/
+__pycache__/

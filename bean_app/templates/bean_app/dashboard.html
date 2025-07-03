@@ -1,0 +1,186 @@
+{% extends 'bean_app/base.html' %}
+{% block content %}
+<div class="container py-4" style="max-width:1300px;">
+  <h2 class="fw-bold mb-4 text-center" style="font-size:2.3rem;"><i class="fa fa-chart-bar text-primary me-2"></i>My Dashboard</h2>
+  <!-- Key Stats Row -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 text-center p-3" style="background:#e3fcec;">
+        <div class="mb-1"><i class="fa fa-list-ol fa-lg text-success"></i></div>
+        <div class="fw-bold" style="font-size:1.2rem;">Total Predictions</div>
+        <div class="display-6 fw-bold text-success">{{ total_predictions }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 text-center p-3" style="background:#fff4e5;">
+        <div class="mb-1"><i class="fa fa-disease fa-lg text-warning"></i></div>
+        <div class="fw-bold" style="font-size:1.2rem;">Most Common Result</div>
+        <div class="fw-bold text-warning" style="font-size:1.5rem;">{{ most_common_result|default:'—' }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 text-center p-3" style="background:#e3f2fd;">
+        <div class="mb-1"><i class="fa fa-clock fa-lg text-info"></i></div>
+        <div class="fw-bold" style="font-size:1.2rem;">Recent Activity</div>
+        <div class="fw-bold text-info" style="font-size:1.5rem;">{{ recent_predictions|length }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 text-center p-3" style="background:#fce4ec;">
+        <div class="mb-1"><i class="fa fa-robot fa-lg text-danger"></i></div>
+        <div class="fw-bold" style="font-size:1.2rem;">Models Used</div>
+        <div class="fw-bold text-danger" style="font-size:1.5rem;">{{ model_labels|length }}</div>
+      </div>
+    </div>
+  </div>
+  <!-- Analytics Grid -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100 p-3">
+        <div class="fw-semibold mb-2"><i class="fa fa-calendar-alt me-2 text-primary"></i>Predictions Per Day</div>
+        <canvas id="perDayChart"></canvas>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 h-100 p-3">
+        <div class="fw-semibold mb-2"><i class="fa fa-pie-chart me-2 text-success"></i>Class Distribution</div>
+        <div style="height:220px;">
+          <canvas id="classDistChart" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 h-100 p-3">
+        <div class="fw-semibold mb-2"><i class="fa fa-robot me-2 text-info"></i>Model Usage</div>
+        <div style="height:220px;">
+          <canvas id="modelUsageChart" height="180"></canvas>
+        </div>
+        <div class="mt-3">
+          {% for label, count in model_usage %}
+            <div class="d-flex align-items-center mb-1">
+              <span class="me-2 small">{{ label }}</span>
+              <div class="progress flex-grow-1" style="height:8px;">
+                <div class="progress-bar" role="progressbar" style="width:{{ count|floatformat:2 }}%;background:#1976d2;"></div>
+              </div>
+              <span class="ms-2 small text-muted">{{ count }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Activity & Images Row -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100 p-3">
+        <div class="fw-semibold mb-2"><i class="fa fa-images me-2 text-primary"></i>Most Recent Images</div>
+        <div class="d-flex flex-wrap gap-2 justify-content-start">
+          {% for img in recent_images %}
+            <img src="{{ img.url }}" alt="Recent image" class="rounded shadow-sm" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #eee;">
+          {% empty %}
+            <span class="text-muted">No recent images.</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Recent Predictions Table -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 p-3">
+        <div class="fw-semibold mb-2"><i class="fa fa-history me-2 text-secondary"></i>Recent Predictions</div>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle mt-3">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Image</th>
+                <th>Result</th>
+                <th>Model</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in recent_predictions %}
+              <tr style="transition:background 0.2s;">
+                <td>{{ p.created_at|date:'Y-m-d H:i' }}</td>
+                <td><img src="{{ p.image.url }}" alt="Prediction Image" style="width:40px; height:40px; object-fit:cover; border-radius:0.5em;"></td>
+                <td><span class="fw-bold text-success">{{ p.result }}</span></td>
+                <td>{{ p.model_used }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center">No predictions yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const perDayCtx = document.getElementById('perDayChart').getContext('2d');
+const classDistCtx = document.getElementById('classDistChart').getContext('2d');
+const modelUsageCtx = document.getElementById('modelUsageChart').getContext('2d');
+const perDayChart = new Chart(perDayCtx, {
+  type: 'line',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Predictions',
+      data: {{ chart_data|safe }},
+      borderColor: '#388e3c',
+      backgroundColor: 'rgba(56,142,60,0.1)',
+      fill: true,
+      tension: 0.3
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true } }
+  }
+});
+const classDistChart = new Chart(classDistCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ class_labels|safe }},
+    datasets: [{
+      label: 'Count',
+      data: {{ class_data|safe }},
+      backgroundColor: '#7bb1e0',
+      borderColor: '#388e3c',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+    scales: {
+      x: { ticks: { font: { size: 10 } } },
+      y: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+const modelUsageChart = new Chart(modelUsageCtx, {
+  type: 'pie',
+  data: {
+    labels: {{ model_labels|safe }},
+    datasets: [{
+      data: {{ model_counts|safe }},
+      backgroundColor: ['#388e3c', '#1976d2', '#ffb300'],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { font: { size: 10 } }
+      },
+      tooltip: { enabled: true }
+    }
+  }
+});
+</script>
+{% endblock %} 

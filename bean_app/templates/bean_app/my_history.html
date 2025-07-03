@@ -1,0 +1,64 @@
+{% extends 'bean_app/base.html' %}
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; background: #fff; border-radius: 1.2rem; box-shadow: 0 4px 24px #0001; padding: 2.5rem 2.5rem 2rem 2.5rem;">
+  <h2 style="font-weight:700; color:#222; margin-bottom:1.2rem;">My Prediction History</h2>
+  {% if predictions %}
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#eaf3fa;">
+            <th style="padding:0.7em; text-align:left;">Image</th>
+            <th style="padding:0.7em; text-align:left;">Result</th>
+            <th style="padding:0.7em; text-align:left;">Model</th>
+            <th style="padding:0.7em; text-align:left;">Date</th>
+            <th style="padding:0.7em; text-align:left;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          {% for p in predictions %}
+          <tr class="history-row" style="border-bottom:1px solid #eee; {% if forloop.counter > 5 %}display:none;{% endif %}">
+            <td style="padding:0.7em;"><img src="{{ p.image.url }}" alt="Prediction Image" style="width:60px; height:60px; object-fit:cover; border-radius:0.5em; box-shadow:0 2px 8px #0001;"></td>
+            <td style="padding:0.7em; font-weight:600; color:#388e3c;">{{ p.result }}</td>
+            <td style="padding:0.7em;">{{ p.model_used }}</td>
+            <td style="padding:0.7em; color:#888;">{{ p.created_at|date:'Y-m-d H:i' }}</td>
+            <td style="padding:0.7em;">
+              <a href="{% url 'download_prediction' p.pk %}" class="btn btn-sm btn-outline-primary" style="margin-right:0.5em;">Download Image</a>
+              <a href="{% url 'download_prediction_txt' p.pk %}" class="btn btn-sm btn-outline-secondary" style="margin-right:0.5em;">Download TXT</a>
+              <a href="{% url 'download_prediction_pdf' p.pk %}" class="btn btn-sm btn-outline-success" style="margin-right:0.5em;">Download PDF</a>
+              <form method="post" action="{% url 'delete_prediction' p.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this prediction?');">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if predictions|length > 5 %}
+    <div class="text-center mt-3">
+      <button id="view-more-btn" class="btn btn-outline-primary btn-sm">View More</button>
+      <button id="view-less-btn" class="btn btn-outline-secondary btn-sm" style="display:none;">View Less</button>
+    </div>
+    <script>
+      const rows = document.querySelectorAll('.history-row');
+      const moreBtn = document.getElementById('view-more-btn');
+      const lessBtn = document.getElementById('view-less-btn');
+      moreBtn && moreBtn.addEventListener('click', function() {
+        rows.forEach(r => r.style.display = '');
+        moreBtn.style.display = 'none';
+        lessBtn.style.display = '';
+      });
+      lessBtn && lessBtn.addEventListener('click', function() {
+        rows.forEach((r, i) => r.style.display = (i < 5) ? '' : 'none');
+        moreBtn.style.display = '';
+        lessBtn.style.display = 'none';
+        window.scrollTo({ top: document.getElementById('history-tbody').offsetTop - 100, behavior: 'smooth' });
+      });
+    </script>
+    {% endif %}
+  {% else %}
+    <p style="font-size:1.13rem; color:#888;">No predictions yet. Try classifying a bean leaf!</p>
+  {% endif %}
+</div>
+{% endblock %} 
