@@ -21,3 +21,13 @@ __pycache__/
 *.pth
 .ipynb_checkpoints/
 __pycache__/
+# Ignore virtual environment and local DB
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Ignore uploaded avatars & predictions
+media/avatars/
+media/predictions/
+

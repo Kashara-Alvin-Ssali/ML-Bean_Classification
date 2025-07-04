@@ -70,7 +70,7 @@
     </div>
   </div>
   <!-- Activity & Images Row -->
-  <div class="row g-3 mb-3">
+  <!-- <div class="row g-3 mb-3">
     <div class="col-12 col-lg-6">
       <div class="card shadow-sm border-0 h-100 p-3">
         <div class="fw-semibold mb-2"><i class="fa fa-images me-2 text-primary"></i>Most Recent Images</div>
@@ -83,7 +83,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- Recent Predictions Table -->
   <div class="row g-3 mb-3">
     <div class="col-12">
@@ -125,10 +125,10 @@ const modelUsageCtx = document.getElementById('modelUsageChart').getContext('2d'
 const perDayChart = new Chart(perDayCtx, {
   type: 'line',
   data: {
-    labels: {{ chart_labels|safe }},
+    labels: {{ chart_labels|default:'[]'|safe }},
     datasets: [{
       label: 'Predictions',
-      data: {{ chart_data|safe }},
+      data: {{ chart_data|default:'[]'|safe }},
       borderColor: '#388e3c',
       backgroundColor: 'rgba(56,142,60,0.1)',
       fill: true,
@@ -143,10 +143,10 @@ const perDayChart = new Chart(perDayCtx, {
 const classDistChart = new Chart(classDistCtx, {
   type: 'bar',
   data: {
-    labels: {{ class_labels|safe }},
+    labels: {{ class_labels|default:'[]'|safe }},
     datasets: [{
       label: 'Count',
-      data: {{ class_data|safe }},
+      data: {{ class_data|default:'[]'|safe }},
       backgroundColor: '#7bb1e0',
       borderColor: '#388e3c',
       borderWidth: 1
@@ -164,9 +164,9 @@ const classDistChart = new Chart(classDistCtx, {
 const modelUsageChart = new Chart(modelUsageCtx, {
   type: 'pie',
   data: {
-    labels: {{ model_labels|safe }},
+    labels: {{ model_labels|default:'[]'|safe }},
     datasets: [{
-      data: {{ model_counts|safe }},
+      data: {{ model_counts|default:'[]'|safe }},
       backgroundColor: ['#388e3c', '#1976d2', '#ffb300'],
       borderWidth: 1
     }]
